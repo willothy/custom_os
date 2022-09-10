@@ -1,4 +1,4 @@
-use alloc::alloc::{GlobalAlloc, Layout};
+use alloc::alloc::Layout;
 use x86_64::{
     structures::paging::{
         mapper::MapToError, FrameAllocator, Mapper, Page, PageTableFlags, Size4KiB,
@@ -6,13 +6,16 @@ use x86_64::{
     VirtAddr,
 };
 
-pub mod bump;
-pub mod pool;
-use self::bump::BumpAllocator;
-use self::pool::PoolAllocator;
+mod bump;
+mod fixed_size_block;
+mod pool;
+
+use bump::BumpAllocator;
+use fixed_size_block::FixedSizeBlockAllocator;
+use pool::PoolAllocator;
 
 #[global_allocator]
-static ALLOCATOR: PoolAllocator = PoolAllocator::create();
+static ALLOCATOR: FixedSizeBlockAllocator = FixedSizeBlockAllocator::create();
 
 #[alloc_error_handler]
 fn alloc_error_handler(layout: Layout) -> ! {

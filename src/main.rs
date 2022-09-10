@@ -7,9 +7,12 @@
 
 extern crate alloc;
 
-use bootloader::{entry_point, BootInfo};
+use bootloader::{bootinfo::MemoryMap, entry_point, BootInfo};
 use core::panic::PanicInfo;
-use custom_os::*;
+use custom_os::{
+    task::{executor::Executor, keyboard, simple_executor::SimpleExecutor, Task},
+    *,
+};
 
 entry_point!(kernel_main);
 
@@ -27,13 +30,25 @@ pub fn kernel_main(boot_info: &'static BootInfo) -> ! {
 
     allocator::init_heap(&mut mapper, &mut frame_allocator).expect("heap initialization failed");
 
-    let x = alloc::boxed::Box::new(41);
-
     #[cfg(test)]
     test_main();
 
-    println!("It did not crash! {}", x);
+    let mut executor = Executor::new();
+    executor.spawn(Task::new(example_task()));
+    executor.spawn(Task::new(keyboard::print_keypresses()));
+    executor.run();
+
+    println!("It did not crash!");
     hlt_loop();
+}
+
+async fn async_number() -> u32 {
+    42
+}
+
+async fn example_task() {
+    let number = async_number().await;
+    println!("async number: {}", number);
 }
 
 #[cfg(not(test))]

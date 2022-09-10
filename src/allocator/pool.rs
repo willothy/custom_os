@@ -69,9 +69,20 @@ impl _PoolAllocator {
         // create a new list node and append it at the start of the list
         let mut node = ListNode::new(size);
         node.next = self.head.next.take();
+
+        // merge adjacent free regions
+        let mut cur_node = &mut self.head.next;
+        while let Some(next_node) = cur_node.as_mut() {
+            if node.end_addr() + 1 == next_node.start_addr() {
+                node.size += next_node.size;
+                node.next = next_node.next.take();
+            }
+            cur_node = &mut next_node.next;
+        }
+
         let node_ptr = addr as *mut ListNode;
         node_ptr.write(node);
-        self.head.next = Some(&mut *node_ptr)
+        self.head.next = Some(&mut *node_ptr);
     }
 
     fn alloc_from_region(region: &ListNode, size: usize, align: usize) -> Result<usize, ()> {
@@ -127,5 +138,15 @@ impl ListNode {
 
     fn end_addr(&self) -> usize {
         self.start_addr() + self.size
+    }
+
+    pub fn try_merge_with_next(&mut self, next: &mut ListNode) -> Option<&mut ListNode> {
+        if self.end_addr() == next.start_addr() {
+            self.size += next.size;
+            self.next = next.next.take();
+            Some(self)
+        } else {
+            None
+        }
     }
 }

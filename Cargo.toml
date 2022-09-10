@@ -11,7 +11,8 @@ test-args = [
 test-timeout = 300
 test-success-exit-code = 33
 
-#[package.metadata.bootloader]
+[package.metadata.bootloader]
+physical-memory-offset = "0x0000f00000000000"
 #map-physical-memory = true
 
 [[test]]
@@ -46,5 +47,16 @@ linked_list_allocator = "0.9.0"
 version = "1.0"
 features = ["spin_no_std"]
 
-[build-dependencies]
-bootloader-locator = "0.0.4"
+[dependencies.crossbeam-queue]
+version = "0.3.6"
+default-features = false
+features = ["alloc"]
+
+[dependencies.conquer-once]
+version = "0.3.2"
+default-features = false
+
+[dependencies.futures-util]
+version = "0.3.4"
+default-features = false
+features = ["alloc"]
