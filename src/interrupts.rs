@@ -19,6 +19,14 @@ lazy_static! {
         let mut idt = InterruptDescriptorTable::new();
         idt.breakpoint.set_handler_fn(breakpoint_handler);
         idt.page_fault.set_handler_fn(page_fault_handler);
+        idt.bound_range_exceeded
+            .set_handler_fn(bound_range_exceeded_handler);
+        idt.overflow.set_handler_fn(overflow_handler);
+        idt.invalid_opcode.set_handler_fn(invalid_opcode_handler);
+        idt.alignment_check.set_handler_fn(alignment_check_handler);
+        idt.divide_error.set_handler_fn(divide_error_handler);
+        idt.stack_segment_fault
+            .set_handler_fn(stack_segment_fault_handler);
         unsafe {
             idt.double_fault
                 .set_handler_fn(double_fault_handler)
@@ -49,6 +57,42 @@ impl InterruptIndex {
 
 pub fn init_idt() {
     IDT.load();
+}
+
+extern "x86-interrupt" fn stack_segment_fault_handler(
+    stack_frame: InterruptStackFrame,
+    something: u64,
+) {
+    println!(
+        "EXCEPTION: STACK_SEGMENT_FAULT {}\n{:#?}",
+        something, stack_frame
+    );
+}
+
+extern "x86-interrupt" fn divide_error_handler(stack_frame: InterruptStackFrame) {
+    println!("EXCEPTION: DIVIDE ERROR\n{:#?}", stack_frame);
+}
+
+extern "x86-interrupt" fn alignment_check_handler(
+    stack_frame: InterruptStackFrame,
+    something: u64,
+) {
+    println!(
+        "INTERRUPT: ALIGNMENT CHECK {}\n{:#?}",
+        something, stack_frame
+    );
+}
+
+extern "x86-interrupt" fn invalid_opcode_handler(stack_frame: InterruptStackFrame) {
+    println!("EXCEPTION: INVALID OPCODE\n{:#?}", stack_frame);
+}
+
+extern "x86-interrupt" fn overflow_handler(stack_frame: InterruptStackFrame) {
+    println!("EXCEPTION: OVERFLOW\n{:#?}", stack_frame);
+}
+
+extern "x86-interrupt" fn bound_range_exceeded_handler(stack_frame: InterruptStackFrame) {
+    println!("EXCEPTION: BOUND RANGE EXCEEDED\n{:#?}", stack_frame);
 }
 
 extern "x86-interrupt" fn breakpoint_handler(stack_frame: InterruptStackFrame) {

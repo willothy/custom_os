@@ -23,7 +23,7 @@ name = "stack_overflow"
 harness = false
 
 [profile.dev]
-panic = "abort" # commented to allow running tests
+#panic = "abort" # commented to allow running tests
 
 [profile.release]
 panic = "abort"
@@ -40,6 +40,7 @@ uart_16550 = "0.2.18"
 pic8259 = "0.10.1"
 pc-keyboard = "0.5.1"
 bootloader = { version = "0.9.18", features = [ "map_physical_memory" ] }
+linked_list_allocator = "0.9.0"
 
 [dependencies.lazy_static]
 version = "1.0"
